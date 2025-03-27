@@ -156,12 +156,18 @@ function Post({ avatar, username, time, content, image, likes, comments, reposts
   const[showComment, setShowComment] = useState(false)
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
+  const [reposted, setReposted] = useState(false);
+  const [repostCount, setRepostCount] = useState(reposts);
   const onClose = () => {
     setShowComment(false);
   };
   const handleLike = () => {
     setLiked(!liked);
     setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+  };
+  const handleRepost = () => {
+    setReposted(!reposted);
+    setRepostCount((prev) => (reposted ? prev - 1 : prev + 1));
   };
   return (
     <div className="bg-white p-4 shadow-md w-full rounded-lg border">
@@ -187,7 +193,11 @@ function Post({ avatar, username, time, content, image, likes, comments, reposts
           onClick={handleLike}
         />
         <ActionButton icon={<MessageCircle size={18} />} count={comments} onClick={() => setShowComment((prev) => !prev)}/>
-        <ActionButton icon={<Repeat size={18} />} count={reposts} />
+        <ActionButton 
+          icon={<Repeat size={18} className={reposted ? "text-green-500" : "text-gray-500"} />} 
+          count={repostCount} 
+          onClick={handleRepost}
+        />
       </div>
       {showComment && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
