@@ -154,6 +154,15 @@ interface PostProps {
 
 function Post({ avatar, username, time, content, image, likes, comments, reposts, saves }: PostProps) {
   const[showComment, setShowComment] = useState(false)
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(likes);
+  const onClose = () => {
+    setShowComment(false);
+  };
+  const handleLike = () => {
+    setLiked(!liked);
+    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+  };
   return (
     <div className="bg-white p-4 shadow-md w-full rounded-lg border">
       
@@ -172,11 +181,75 @@ function Post({ avatar, username, time, content, image, likes, comments, reposts
 
       {/* Action Buttons */}
       <div className="flex gap-4 text-gray-500 mt-3">
-        <ActionButton icon={<Heart size={18} />} count={likes} />
+      <ActionButton 
+          icon={<Heart size={18} className={liked ? "text-red-500" : "text-gray-500"} />} 
+          count={likeCount} 
+          onClick={handleLike}
+        />
         <ActionButton icon={<MessageCircle size={18} />} count={comments} onClick={() => setShowComment((prev) => !prev)}/>
         <ActionButton icon={<Repeat size={18} />} count={reposts} />
       </div>
-
+      {showComment && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white w-[500px] rounded-xl shadow-lg">
+          
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 border-b">
+            <button className="text-gray-600 hover:text-black">
+              <X size={20} onClick={onClose}/>
+            </button>
+            <p className="text-sm font-semibold">Thread trả lời</p>
+            <button className="text-gray-600 hover:text-black">
+              <MoreHorizontal size={20} />
+            </button>
+          </div>
+  
+          {/* Nội dung thread */}
+          <div className="p-4">
+            <div className="flex space-x-3">
+              <img
+                src="https://placehold.co/40x40"
+                alt="Avatar"
+                className="w-10 h-10 rounded-full"
+              />
+              <div className="flex-1">
+                <p className="font-semibold text-sm">{username} <span className="text-gray-500 text-xs">• {time}</span></p>
+                <p className="text-sm text-gray-800">{content}</p>
+              </div>
+            </div>
+          </div>
+  
+          {/* Ô nhập phản hồi */}
+          <div className="p-4 border-t">
+            <div className="flex space-x-3">
+              <img
+                src="https://placehold.co/40x40"
+                alt="Avatar"
+                className="w-10 h-10 rounded-full"
+              />
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder={`Trả lời ${username}`}
+                  className="w-full border-none outline-none bg-transparent text-sm text-gray-800"
+                />
+                <div className="flex space-x-3 text-gray-500 mt-2">
+                  <button><Image size={18} /></button>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          {/* Nút Đăng */}
+          <div className="p-4">
+            <button className="w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed">
+              Đăng
+            </button>
+          </div>
+  
+        </div>
+      </div>
+      )}
     </div>
   );
 }
@@ -184,7 +257,9 @@ function Post({ avatar, username, time, content, image, likes, comments, reposts
 // Component cho nút bấm
 function ActionButton({ icon, count, onClick }: { icon: ReactNode; count: number; onClick?: () => void }) {
   return (
-    <button className="flex items-center space-x-1 hover:text-black">
+    <button 
+    className="flex items-center space-x-1 hover:text-black"
+    onClick={onClick}>
       {icon}
       <span>{count}</span>
     </button>
