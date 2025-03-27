@@ -1,7 +1,7 @@
-"use client"
+'use client'
 import { MessageCircle, Heart, Repeat, Smile, Image, MapPin, AlignLeft, X, MoreHorizontal, Copy } from "lucide-react";
-import { useState } from "react";
-import { ReactNode } from "react";
+import { useState,ReactNode, useEffect  } from "react";
+import { useRouter } from "next/navigation";
 
 const posts = [
   {
@@ -43,99 +43,124 @@ const posts = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const[showUploadPost, setShowUploadPost] =useState(false)
   const [content, setContent] = useState("");
+  const [posts, setPosts] = useState<any[]>([]);
   const onClose = () => {
     setShowUploadPost(false);
   };
+  useEffect(() => {
+    const storedPosts = JSON.parse(localStorage.getItem("posts") || "[]");
+    setPosts(storedPosts);
+  }, []);
+
+  const handlePost = () => {
+    if (!content.trim()) return;
+
+    const newPost = {
+      id: Date.now(),
+      avatar: "https://placehold.co/40x40",
+      username: "randomuser",
+      time: "Vừa xong",
+      content: content,
+      image: "https://placehold.co/500x200",
+      likes: 0,
+      comments: 0,
+      reposts: 0,
+      saves: 0,
+    };
+
+    const updatedPosts = [newPost, ...posts];
+    setPosts(updatedPosts);
+    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    setContent("");
+    setShowUploadPost(false);
+  };
+
   return (
     <div className="w-full h-screen bg-gray-100 flex flex-col items-center p-4">
-  <h1 className="text-xl font-bold mb-4">Trang chủ</h1>
-  <div className="max-w-xl w-full h-auto">
-    {/* Post Input & List */}
-    <div className="bg-white rounded-2xl shadow-md p-4 space-y-4">
-      {/* Post Input */}
-      <div 
-      className="flex items-center space-x-3 border-b pb-3"
-      onClick={() => setShowUploadPost((prev) => !prev)}>
-        <img src="https://placehold.co/40" alt="Avatar" className="w-10 h-10 rounded-full" />
-        <div className="flex-1 flex gap-2">
-          <input 
-            type="text" 
-            placeholder="Có gì mới?" 
-            className="flex-1 p-2 border rounded-lg focus:outline-none" 
-          />
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold">Đăng</button>
-        </div>
-      </div>
-      {showUploadPost&&(
-        <div className="fixed inset-0 h-full flex items-center justify-center bg-black/50">
-          <div className="bg-white w-[600px] rounded-2xl shadow-lg p-4 translate-x-10">
-            {/* Header */}
-            <div className="flex justify-between items-center border-b pb-2">
-              <button className="text-gray-600 hover:text-black">
-                <X size={22} onClick={onClose} />
-              </button>
-              <h2 className="text-lg font-semibold">Thread mới</h2>
-              <div></div>
-            </div>
-        
-            {/* Content */}
-            <div className="p-3 space-y-3">
-              {/* User Info & Input */}
-              <div className="flex items-start space-x-3">
-                <img src="https://placehold.co/40" alt="Avatar" className="w-10 h-10 rounded-full" />
-                <div className="w-full">
-                  <p className="text-sm font-semibold">
-                    nindang035 <span className="text-gray-500">› Thêm chủ đề</span>
-                  </p>
-                  <textarea
-                    className="w-full mt-1 p-2 text-sm border-none outline-none resize-none"
-                    rows={2}
-                    placeholder="Có gì mới?"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                  />
-                </div>
-              </div>
-        
-              {/* Attachments */}
-              <div className="flex items-center text-gray-500 space-x-4">
-                <Image size={20} className="cursor-pointer hover:text-black" />
-                <Smile size={20} className="cursor-pointer hover:text-black" />
-                <AlignLeft size={20} className="cursor-pointer hover:text-black" />
-                <MapPin size={20} className="cursor-pointer hover:text-black" />
-              </div>
-        
-              {/* Footer */}
-              <div className="flex justify-between items-center border-t pt-3">
-                <button className="text-gray-500 text-sm">Bất kỳ ai cũng có thể trả lời và trích dẫn</button>
-                <button
-                  className={`px-4 py-2 rounded-lg font-semibold ${
-                    content.trim() ? "bg-blue-500 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                  disabled={!content.trim()}
-                >
-                  Đăng
-                </button>
-              </div>
+      <h1 className="text-xl font-bold mb-4">Trang chủ</h1>
+      <div className="max-w-xl w-full h-auto">
+        {/* Post Input & List */}
+        <div className="bg-white rounded-2xl shadow-md p-4 space-y-4">
+          {/* Post Input */}
+          <div 
+          className="flex items-center space-x-3 border-b pb-3"
+          onClick={() => setShowUploadPost((prev) => !prev)}>
+            <img src="https://placehold.co/40" alt="Avatar" className="w-10 h-10 rounded-full" />
+            <div className="flex-1 flex gap-2">
+              <input 
+                type="text" 
+                placeholder="Có gì mới?" 
+                className="flex-1 p-2 border rounded-lg focus:outline-none" 
+              />
+              <button className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold">Đăng</button>
             </div>
           </div>
-        </div>
-      )
+          {showUploadPost&&(
+            <div className="fixed inset-0 h-full flex items-center justify-center bg-black/50">
+              <div className="bg-white w-[600px] rounded-2xl shadow-lg p-4 translate-x-10">
+                {/* Header */}
+                <div className="flex justify-between items-center border-b pb-2">
+                  <button className="text-gray-600 hover:text-black">
+                    <X size={22} onClick={onClose} className="cursor-pointer"/>
+                  </button>
+                  <h2 className="text-lg font-semibold">Thread mới</h2>
+                  <div></div>
+                </div>
 
-      }
-      {/* Post List */}
-      <div className="space-y-4 max-h-[80vh] overflow-y-auto">
-        {posts.map((post) => (
-          <Post key={post.id} {...post} />
-        ))}
+                {/* Content */}
+                <div className="p-3 space-y-3">
+                  {/* User Info & Input */}
+                  <div className="flex items-start space-x-3">
+                    <img src="https://placehold.co/40" alt="Avatar" className="w-10 h-10 rounded-full" />
+                    <div className="w-full">
+                      <p className="text-sm font-semibold">
+                        nindang035 <span className="text-gray-500">› Thêm chủ đề</span>
+                      </p>
+                      <textarea
+                        className="w-full mt-1 p-2 text-sm border-none outline-none resize-none"
+                        rows={2}
+                        placeholder="Có gì mới?"
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Attachments */}
+                  <div className="flex items-center text-gray-500 space-x-4">
+                    <Image size={20} className="cursor-pointer hover:text-black" />
+                    <Smile size={20} className="cursor-pointer hover:text-black" />
+                    <AlignLeft size={20} className="cursor-pointer hover:text-black" />
+                    <MapPin size={20} className="cursor-pointer hover:text-black" />
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex justify-between items-center border-t pt-3">
+                    <button className="text-gray-500 text-sm">Bất kỳ ai cũng có thể trả lời và trích dẫn</button>
+                    <button className={`px-4 py-2 rounded-lg font-semibold ${content.trim() ? "bg-blue-500 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`} disabled={!content.trim()} onClick={handlePost}>
+                      Đăng
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        
+          }
+          {/* Post List */}
+          <div className="space-y-4 max-h-[80vh] overflow-y-auto">
+            {posts.map((post) => (
+              <div key={post.id} onClick={() => router.push(`/comment/${post.id}`)} className="cursor-pointer">
+              <Post {...post} />
+            </div>
+          ))}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-
-
   );
 }
 
@@ -150,6 +175,7 @@ interface PostProps {
   comments: number;
   reposts: number;
   saves: number;
+  onClick?: () => void;
 }
 
 function Post({ avatar, username, time, content, image, likes, comments, reposts, saves }: PostProps) {
@@ -168,6 +194,10 @@ function Post({ avatar, username, time, content, image, likes, comments, reposts
   const handleRepost = () => {
     setReposted(!reposted);
     setRepostCount((prev) => (reposted ? prev - 1 : prev + 1));
+  };
+  const openComments = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowComment((prev) => !prev);
   };
   return (
     <div className="bg-white p-4 shadow-md w-full rounded-lg border">
@@ -200,13 +230,18 @@ function Post({ avatar, username, time, content, image, likes, comments, reposts
         />
       </div>
       {showComment && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="bg-white w-[500px] rounded-xl shadow-lg">
+        <div 
+        className="fixed inset-0 flex items-center justify-center bg-black/50" 
+        onClick={(e) => {
+          e.stopPropagation(); 
+        }}
+        >
+        <div className="bg-white w-[500px] rounded-xl shadow-lg translate-x-10">
           
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b">
             <button className="text-gray-600 hover:text-black">
-              <X size={20} onClick={onClose}/>
+              <X size={20} onClick={onClose} className="cursor-pointer"/>
             </button>
             <p className="text-sm font-semibold">Thread trả lời</p>
             <button className="text-gray-600 hover:text-black">
@@ -230,7 +265,7 @@ function Post({ avatar, username, time, content, image, likes, comments, reposts
           </div>
   
           {/* Ô nhập phản hồi */}
-          <div className="p-4 border-t">
+          <div className="p-4">
             <div className="flex space-x-3">
               <img
                 src="https://placehold.co/40x40"
@@ -265,11 +300,23 @@ function Post({ avatar, username, time, content, image, likes, comments, reposts
 }
 
 // Component cho nút bấm
-function ActionButton({ icon, count, onClick }: { icon: ReactNode; count: number; onClick?: () => void }) {
+function ActionButton({ 
+  icon, 
+  count, 
+  onClick 
+}: { 
+  icon: ReactNode; 
+  count: number; 
+  onClick?: (e: React.MouseEvent) => void; 
+}) {
   return (
     <button 
-    className="flex items-center space-x-1 hover:text-black"
-    onClick={onClick}>
+      className="flex items-center space-x-1 hover:text-black"
+      onClick={(e) => {
+        e.stopPropagation(); // Ngăn sự kiện click lan lên cha
+        onClick?.(e);
+      }}
+    >
       {icon}
       <span>{count}</span>
     </button>
