@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 type Reply = {
@@ -15,13 +15,13 @@ type Post = {
   avatar: string;
   time: string;
   content: string;
-  likes: number;
-  liked: boolean;
-  replies: Reply[];
+  image?: string;
+  replies?: Reply[]; // 🟢 Danh sách comment
 };
 
 type PostContextType = {
   posts: Post[];
+  setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
   addComment: (postId: number, comment: Reply) => void;
 };
 
@@ -29,27 +29,29 @@ const PostContext = createContext<PostContextType | undefined>(undefined);
 
 export const PostProvider = ({ children }: { children: ReactNode }) => {
   const [posts, setPosts] = useState<Post[]>(() => {
-    if (typeof window !== "undefined") {
-      const storedPosts = localStorage.getItem("posts");
-      return storedPosts ? JSON.parse(storedPosts) : [];
-    }
-    return [];
+    if (typeof window === "undefined") return []; // Tránh lỗi khi SSR
+    const storedPosts = localStorage.getItem("posts");
+    return storedPosts ? JSON.parse(storedPosts) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem("posts", JSON.stringify(posts));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("posts", JSON.stringify(posts));
+    }
   }, [posts]);
 
   const addComment = (postId: number, comment: Reply) => {
-    const updatedPosts = posts.map((post) =>
-      post.id === postId ? { ...post, replies: [...post.replies, comment] } : post
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? { ...post, replies: [...(post.replies || []), comment] }
+          : post
+      )
     );
-    setPosts(updatedPosts);
-    localStorage.setItem("posts", JSON.stringify(updatedPosts)); // Cập nhật localStorage ngay lập tức
   };
 
   return (
-    <PostContext.Provider value={{ posts, addComment }}>
+    <PostContext.Provider value={{ posts,setPosts , addComment }}>
       {children}
     </PostContext.Provider>
   );
