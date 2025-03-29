@@ -1,5 +1,5 @@
 'use client'
-import { MessageCircle, Heart, Repeat, Smile, Image, MapPin, AlignLeft, X, MoreHorizontal, Copy } from "lucide-react";
+import { MessageCircle, Heart, Repeat, Smile, Image, MapPin, AlignLeft, X, MoreHorizontal, Ellipsis } from "lucide-react";
 import { useState,ReactNode, useEffect  } from "react";
 import { useRouter } from "next/navigation";
 import { usePostContext } from "@/context/PostContext"; 
@@ -59,7 +59,7 @@ export default function Home() {
     const newPost = {
       id: Date.now(),
       avatar: "https://placehold.co/40x40",
-      username: "randomuser",
+      username: "username",
       time: "Vừa xong",
       content: content,
       image: "https://placehold.co/500x200",
@@ -125,9 +125,7 @@ export default function Home() {
 
                   <div className="flex items-center text-gray-500 space-x-4">
                     <Image size={20} className="cursor-pointer hover:text-black" />
-                    <Smile size={20} className="cursor-pointer hover:text-black" />
-                    <AlignLeft size={20} className="cursor-pointer hover:text-black" />
-                    <MapPin size={20} className="cursor-pointer hover:text-black" />
+                    
                   </div>
 
                   <div className="flex justify-between items-center border-t pt-3">
@@ -178,7 +176,7 @@ interface PostProps {
 }
 
 function Post({ postId }: { postId: number }) {
-  const { posts, addComment } = usePostContext();
+  const { posts, addComment, editPost, deletePost  } = usePostContext();
   const post = posts.find((p) => p.id === postId);
 
   if (!post) return null; // Tránh lỗi nếu không tìm thấy bài viết
@@ -192,14 +190,13 @@ function Post({ postId }: { postId: number }) {
   const [repostCount, setRepostCount] = useState(0);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState(post?.replies?.length || 0);
-  const [commentList, setCommentList] = useState<any[]>([]);
-  const [commentCount, setCommentCount] = useState(0);
-
-  // 🟢 Lấy số comment từ localStorage khi load trang
- 
+  const [showOptions, setShowOptions] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editedContent, setEditedContent] = useState(content);
   const onClose = () => {
     setShowComment(false);
   };
+
   // 🟢 Xử lý Like
   const handleLike = () => {
     setLiked(!liked);
@@ -228,20 +225,74 @@ function Post({ postId }: { postId: number }) {
     setComments((prev) => prev + 1);
     setNewComment("");
   };
+  const handleEditPost = () => {
+    if (!editedContent.trim()) return;
+    editPost(postId, editedContent);
+    setEditMode(false);
+  };
+  
+  // 🟢 Xử lý xóa bài viết
+  const handleDeletePost = () => {
+    deletePost(postId);
+  };
+  // 🟢 Hiển thị UI sửa bài viết
+  const renderContent = () => {
+    return editMode ? (
+      <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+        <textarea
+          value={editedContent}
+          onChange={(e) => setEditedContent(e.target.value)}
+          className="w-full p-2 border rounded-lg"
+        />
+        <div className="flex justify-end gap-2 mt-2">
+          <button onClick={() => setEditMode(false)} className="px-4 py-1 bg-gray-300 text-black rounded-lg">
+            Hủy
+          </button>
+          <button onClick={handleEditPost} className="px-4 py-1 bg-blue-500 text-white rounded-lg">
+            Lưu
+          </button>
+        </div>
+      </div>
+    ) : (
+      <p className="mt-2">{content}</p>
+    );
+  };
   return (
     <div className="bg-white p-4 shadow-md w-full rounded-lg border">
       
       {/* Header */}
-      <div className="flex items-center space-x-3">
-        <img src={avatar} alt="Avatar" className="w-10 h-10 rounded-full" />
-        <div>
-          <p className="font-semibold">{username}</p>
-          <p className="text-sm text-gray-500">{time}</p>
+      <div className="flex justify-between">
+        <div className="flex items-center space-x-3">
+          <img src={avatar} alt="Avatar" className="w-10 h-10 rounded-full" />
+          <div>
+            <p className="font-semibold">{username}</p>
+            <p className="text-sm text-gray-500">{time}</p>
+          </div>
         </div>
+        <div className="hover:bg-gray-100 p-2 rounded-full flex justify-center items-center w-8 h-8" onClick={(e) => {e.stopPropagation()}}>
+          <Ellipsis 
+            size={20} 
+            className="cursor-pointer hover:text-black" 
+            onClick={() => {
+            setShowOptions((prev) => !prev)}
+          }/>
+          
+        </div>
+        {
+          showOptions && (
+            <div className="absolute bg-white border border-gray-200 shadow-md p-2 rounded-lg translate-x-[230%] translate-y-7" onClick={(e) => {
+              e.stopPropagation();
+            }}>
+              <button className="w-full text-left hover:bg-gray-100 p-2" onClick={() => {setEditMode(true);setShowOptions(false);}}>Chỉnh sửa</button>
+              <button className="w-full text-left hover:bg-gray-100 p-2" onClick={handleDeletePost}>Xóa</button>
+            </div>
+          )
+        }
+        
       </div>
 
       {/* Content */}
-      <p className="mt-2">{content}</p>
+      <p className="mt-2">{renderContent()}</p>
       {image && <img src={image} alt="Post" className="mt-2 rounded-lg" />}
 
       {/* Action Buttons */}

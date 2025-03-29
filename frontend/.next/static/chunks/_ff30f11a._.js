@@ -263,7 +263,7 @@ const PostProvider = ({ children })=>{
         "PostProvider.useState": ()=>{
             if ("TURBOPACK compile-time falsy", 0) {
                 "TURBOPACK unreachable";
-            } // Tránh lỗi khi SSR
+            }
             const storedPosts = localStorage.getItem("posts");
             return storedPosts ? JSON.parse(storedPosts) : [];
         }
@@ -277,29 +277,83 @@ const PostProvider = ({ children })=>{
     }["PostProvider.useEffect"], [
         posts
     ]);
+    // 🔹 Thêm comment vào post
     const addComment = (postId, comment)=>{
-        setPosts((prevPosts)=>prevPosts.map((post)=>post.id === postId ? {
+        setPosts((prevPosts)=>{
+            const updatedPosts = prevPosts.map((post)=>post.id === postId ? {
                     ...post,
                     replies: [
                         ...post.replies || [],
                         comment
                     ]
-                } : post));
+                } : post);
+            localStorage.setItem("posts", JSON.stringify(updatedPosts));
+            return updatedPosts;
+        });
+    };
+    // 🔹 Thêm reply vào comment (có thể lồng nhiều cấp)
+    const addReply = (postId, commentId, reply)=>{
+        setPosts((prevPosts)=>{
+            const updatedPosts = prevPosts.map((post)=>{
+                if (post.id !== postId) return post;
+                const updateReplies = (comments)=>comments.map((cmt)=>{
+                        if (cmt.id === commentId) {
+                            return {
+                                ...cmt,
+                                replies: [
+                                    ...cmt.replies || [],
+                                    reply
+                                ]
+                            };
+                        }
+                        return cmt.replies ? {
+                            ...cmt,
+                            replies: updateReplies(cmt.replies)
+                        } : cmt;
+                    });
+                return {
+                    ...post,
+                    replies: updateReplies(post.replies || [])
+                };
+            });
+            localStorage.setItem("posts", JSON.stringify(updatedPosts));
+            return updatedPosts;
+        });
+    };
+    // 🔹 Chỉnh sửa bài viết
+    const editPost = (postId, newContent)=>{
+        setPosts((prevPosts)=>{
+            const updatedPosts = prevPosts.map((post)=>post.id === postId ? {
+                    ...post,
+                    content: newContent
+                } : post);
+            localStorage.setItem("posts", JSON.stringify(updatedPosts));
+            return updatedPosts;
+        });
+    };
+    // 🔹 Xóa bài viết
+    const deletePost = (postId)=>{
+        const updatedPosts = posts.filter((post)=>post.id !== postId);
+        setPosts(updatedPosts);
+        localStorage.setItem("posts", JSON.stringify(updatedPosts));
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PostContext.Provider, {
         value: {
             posts,
             setPosts,
-            addComment
+            addComment,
+            addReply,
+            editPost,
+            deletePost
         },
         children: children
     }, void 0, false, {
         fileName: "[project]/src/context/PostContext.tsx",
-        lineNumber: 54,
+        lineNumber: 102,
         columnNumber: 5
     }, this);
 };
-_s(PostProvider, "Q2Kr93k1h0DGe74WCCMdYtPJDjo=");
+_s(PostProvider, "yxt8ls2X9++VnCS6uii3SPuZajQ=");
 _c = PostProvider;
 const usePostContext = ()=>{
     _s1();

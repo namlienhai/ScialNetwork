@@ -269,7 +269,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 const PostContext = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createContext"])(undefined);
 const PostProvider = ({ children })=>{
     const [posts, setPosts] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(()=>{
-        if ("TURBOPACK compile-time truthy", 1) return []; // Tránh lỗi khi SSR
+        if ("TURBOPACK compile-time truthy", 1) return [];
         "TURBOPACK unreachable";
         const storedPosts = undefined;
     });
@@ -280,25 +280,79 @@ const PostProvider = ({ children })=>{
     }, [
         posts
     ]);
+    // 🔹 Thêm comment vào post
     const addComment = (postId, comment)=>{
-        setPosts((prevPosts)=>prevPosts.map((post)=>post.id === postId ? {
+        setPosts((prevPosts)=>{
+            const updatedPosts = prevPosts.map((post)=>post.id === postId ? {
                     ...post,
                     replies: [
                         ...post.replies || [],
                         comment
                     ]
-                } : post));
+                } : post);
+            localStorage.setItem("posts", JSON.stringify(updatedPosts));
+            return updatedPosts;
+        });
+    };
+    // 🔹 Thêm reply vào comment (có thể lồng nhiều cấp)
+    const addReply = (postId, commentId, reply)=>{
+        setPosts((prevPosts)=>{
+            const updatedPosts = prevPosts.map((post)=>{
+                if (post.id !== postId) return post;
+                const updateReplies = (comments)=>comments.map((cmt)=>{
+                        if (cmt.id === commentId) {
+                            return {
+                                ...cmt,
+                                replies: [
+                                    ...cmt.replies || [],
+                                    reply
+                                ]
+                            };
+                        }
+                        return cmt.replies ? {
+                            ...cmt,
+                            replies: updateReplies(cmt.replies)
+                        } : cmt;
+                    });
+                return {
+                    ...post,
+                    replies: updateReplies(post.replies || [])
+                };
+            });
+            localStorage.setItem("posts", JSON.stringify(updatedPosts));
+            return updatedPosts;
+        });
+    };
+    // 🔹 Chỉnh sửa bài viết
+    const editPost = (postId, newContent)=>{
+        setPosts((prevPosts)=>{
+            const updatedPosts = prevPosts.map((post)=>post.id === postId ? {
+                    ...post,
+                    content: newContent
+                } : post);
+            localStorage.setItem("posts", JSON.stringify(updatedPosts));
+            return updatedPosts;
+        });
+    };
+    // 🔹 Xóa bài viết
+    const deletePost = (postId)=>{
+        const updatedPosts = posts.filter((post)=>post.id !== postId);
+        setPosts(updatedPosts);
+        localStorage.setItem("posts", JSON.stringify(updatedPosts));
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(PostContext.Provider, {
         value: {
             posts,
             setPosts,
-            addComment
+            addComment,
+            addReply,
+            editPost,
+            deletePost
         },
         children: children
     }, void 0, false, {
         fileName: "[project]/src/context/PostContext.tsx",
-        lineNumber: 54,
+        lineNumber: 102,
         columnNumber: 5
     }, this);
 };
