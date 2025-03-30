@@ -119,13 +119,18 @@ export default function Home() {
                         placeholder="Có gì mới?"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey && content.trim()) {
+                            e.preventDefault();
+                            handlePost();
+                          }
+                        }}
                       />
                     </div>
                   </div>
 
                   <div className="flex items-center text-gray-500 space-x-4">
                     <Image size={20} className="cursor-pointer hover:text-black" />
-                    
                   </div>
 
                   <div className="flex justify-between items-center border-t pt-3">
@@ -235,6 +240,17 @@ function Post({ postId }: { postId: number }) {
   const handleDeletePost = () => {
     deletePost(postId);
   };
+
+  // State for follow/unfollow functionality
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  // Handle follow/unfollow action
+  const handleFollowToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFollowing(prev => !prev);
+    // Here you would typically make an API call to update follow status
+  };
+
   // 🟢 Hiển thị UI sửa bài viết
   const renderContent = () => {
     return editMode ? (
@@ -265,8 +281,22 @@ function Post({ postId }: { postId: number }) {
         <div className="flex items-center space-x-3">
           <img src={avatar} alt="Avatar" className="w-10 h-10 rounded-full" />
           <div>
-            <p className="font-semibold">{username}</p>
-            <p className="text-sm text-gray-500">{time}</p>
+          <div className="flex items-center gap-2">
+            <div>
+              <p className="font-semibold">{username}</p>
+              <p className="text-sm text-gray-500">{time}</p>
+            </div>
+            <button
+              onClick={handleFollowToggle}
+              className={`text-xs px-3 py-1 rounded-full font-medium ${
+                isFollowing
+                ? 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+                : 'bg-blue-500 hover:bg-blue-600 text-white'
+              }`}
+            >
+              {isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
+            </button>
+          </div>
           </div>
         </div>
         <div className="hover:bg-gray-100 p-2 rounded-full flex justify-center items-center w-8 h-8" onClick={(e) => {e.stopPropagation()}}>

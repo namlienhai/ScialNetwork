@@ -16,9 +16,9 @@ export default function Sidebar(){
                     <Link href={"/search"} className="hover:bg-slate-200 p-3 rounded-lg">
                         <img width={22} src="/assets/search.svg" alt="search" />
                     </Link>
-                    <div className="hover:bg-slate-200 p-3 rounded-lg relative cursor-pointer">
+                    <Link href={"/activity"} className="hover:bg-slate-200 p-3 rounded-lg relative cursor-pointer">
                         <img width={22} src="/assets/heart.svg" alt="heart" />
-                    </div>
+                    </Link>
                     
                     
                         <div className="hover:bg-slate-200 p-3 rounded-lg">
