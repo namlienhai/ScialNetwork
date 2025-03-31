@@ -3,7 +3,9 @@ import { useEffect, useId, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import ButtonOption from "../ButtonOption"
+
 export default function Sidebar(){
+    const userId = "current-user-id" // Replace this with actual user ID from your auth system
     
     return(
         <div>
@@ -21,9 +23,9 @@ export default function Sidebar(){
                     </Link>
                     
                     
-                        <div className="hover:bg-slate-200 p-3 rounded-lg">
+                        <Link href={`/profile/${userId}`} className="hover:bg-slate-200 p-3 rounded-lg">
                             <img width={20} src="/assets/profile.svg" alt="profile" />
-                        </div>
+                        </Link>
                     
                 </div>
                 <div className="pb-10">
